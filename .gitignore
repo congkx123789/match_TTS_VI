@@ -1,0 +1,57 @@
+# =============================
+# Python — không push
+# =============================
+*.py
+*.pyc
+*.pyo
+__pycache__/
+matcha/
+*.egg-info/
+.venv/
+venv/
+
+# =============================
+# Compiled binaries & objects
+# =============================
+bin/
+cpp/obj/
+cpp/src/*.o
+*.o
+*.a
+
+# =============================
+# Models — chỉ giữ INT8 tối ưu nhất
+# =============================
+models_onnx/matcha_encoder.onnx
+models_onnx/matcha_decoder.onnx
+models_onnx/matcha_encoder_fp16.onnx
+models_onnx/matcha_decoder_fp16.onnx
+models_onnx/matcha_encoder_int8_naive.onnx
+models_onnx/matcha_decoder_int8_naive.onnx
+models_onnx/matcha_encoder_int8_opt.onnx
+models_onnx/matcha_decoder_int8_opt.onnx
+models_onnx/matcha_encoder_matmul_int8.onnx
+models_onnx/matcha_decoder_matmul_int8.onnx
+models_onnx/test_dec_int8_perchan.onnx
+models_onnx/vocos.onnx
+models_onnx/vocos.onnx.data
+
+# =============================
+# Output audio files
+# =============================
+outputs/
+*.wav
+*.mp3
+
+# =============================
+# Misc
+# =============================
+*.log
+*.tmp
+.DS_Store
+extra_long_story.txt
+benchmark_speed.py
+load_model.py
+infer_file.py
+infer_text.py
+foreign_symbols_translator.py
