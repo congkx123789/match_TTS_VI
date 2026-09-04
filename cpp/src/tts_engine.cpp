@@ -38,12 +38,15 @@ bool TTSEngine::init(
     }
     std::cout << "  • Đã nạp bảng từ điển symbols.json thành công." << std::endl;
 
-    // 2. Cấu hình SessionOptions
+    // 2. Cấu hình SessionOptions chuẩn tối ưu CPU
     int actual_threads = (num_threads > 0) ? num_threads : 4;
     session_options_ = Ort::SessionOptions();
     session_options_.SetIntraOpNumThreads(actual_threads);
-    session_options_.SetInterOpNumThreads(actual_threads);
+    session_options_.SetInterOpNumThreads(1); // 1 inter-op thread là tối ưu nhất cho pipeline tuần tự
+    session_options_.SetExecutionMode(ExecutionMode::ORT_SEQUENTIAL);
     session_options_.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
+    session_options_.EnableCpuMemArena();
+    session_options_.EnableMemPattern();
     session_options_.SetLogSeverityLevel(3); // Ẩn cảnh báo memcpy phụ
 
     is_gpu_active_ = false;
@@ -51,20 +54,28 @@ bool TTSEngine::init(
         try {
             OrtCUDAProviderOptions cuda_options{};
             cuda_options.device_id = 0;
+            cuda_options.arena_extend_strategy = 0; // kNextPowerOfTwo
+            cuda_options.cudnn_conv_algo_search = OrtCudnnConvAlgoSearchHeuristic;
+            cuda_options.do_copy_in_default_stream = 1;
+            cuda_options.tunable_op_enable = 0; // Ổn định và nhanh nhất
+
             session_options_.AppendExecutionProvider_CUDA(cuda_options);
             is_gpu_active_ = true;
-            std::cout << "  • Đã kích hoạt phần cứng GPU (NVIDIA CUDA Execution Provider)!" << std::endl;
+            std::cout << "  • Đã kích hoạt phần cứng GPU (NVIDIA CUDA Execution Provider - Blackwell/Ada Tensor Cores)!" << std::endl;
         } catch (const std::exception& e) {
             std::cout << "  ⚠️ Không thể nạp CUDA, chuyển về chế độ CPU: " << e.what() << std::endl;
             session_options_ = Ort::SessionOptions();
             session_options_.SetIntraOpNumThreads(actual_threads);
-            session_options_.SetInterOpNumThreads(actual_threads);
+            session_options_.SetInterOpNumThreads(1);
+            session_options_.SetExecutionMode(ExecutionMode::ORT_SEQUENTIAL);
             session_options_.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
+            session_options_.EnableCpuMemArena();
+            session_options_.EnableMemPattern();
             session_options_.SetLogSeverityLevel(3);
             is_gpu_active_ = false;
         }
     } else {
-        std::cout << "  • Sử dụng chế độ CPU thuần (Luồng thực thi: " << actual_threads << " threads)." << std::endl;
+        std::cout << "  • Sử dụng chế độ CPU thuần tối ưu (Luồng thực thi: " << actual_threads << " threads)." << std::endl;
     }
 
     // 3. Khởi tạo các Session ONNX

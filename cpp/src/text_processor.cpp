@@ -163,7 +163,7 @@ std::vector<int64_t> TextProcessor::text_to_sequence(const std::string& text) co
 }
 
 std::vector<std::string> TextProcessor::split_sentences(const std::string& text) const {
-    std::vector<std::string> sentences;
+    std::vector<std::string> raw_sents;
     std::string current;
     current.reserve(256);
 
@@ -175,7 +175,7 @@ std::vector<std::string> TextProcessor::split_sentences(const std::string& text)
             if (i + 1 == text.size() || text[i + 1] == ' ' || text[i + 1] == '\n' || text[i + 1] == '\r') {
                 std::string s = clean_text(current);
                 if (!s.empty()) {
-                    sentences.push_back(s);
+                    raw_sents.push_back(s);
                 }
                 current.clear();
             }
@@ -184,8 +184,44 @@ std::vector<std::string> TextProcessor::split_sentences(const std::string& text)
 
     std::string last = clean_text(current);
     if (!last.empty()) {
-        sentences.push_back(last);
+        raw_sents.push_back(last);
     }
 
-    return sentences;
+    // Gộp các câu hoàn chỉnh thành các chunk lớn ~20 - 30 giây (khoảng 300 - 450 ký tự)
+    // Không để chunk quá ngắn (như vài chữ mở đầu hay câu thoại 1 từ)
+    std::vector<std::string> chunks;
+    std::string accumulated;
+    const size_t TARGET_CHARS = 400; // ~25 - 30 giây âm thanh
+    const size_t MIN_CHARS = 250;
+    auto ensure_terminal_punct = [](std::string& c) {
+        while (!c.empty() && (c.back() == ' ' || c.back() == '\t' || c.back() == '\r' || c.back() == '\n')) {
+            c.pop_back();
+        }
+        if (!c.empty()) {
+            char last_char = c.back();
+            if (last_char != '.' && last_char != '!' && last_char != '?' && last_char != ':' && last_char != ';') {
+                c.push_back('.');
+            }
+        }
+    };
+
+    for (const auto& s : raw_sents) {
+        if (accumulated.empty()) {
+            accumulated = s;
+        } else {
+            if (accumulated.size() + 1 + s.size() <= TARGET_CHARS || accumulated.size() < MIN_CHARS) {
+                accumulated += " " + s;
+            } else {
+                ensure_terminal_punct(accumulated);
+                chunks.push_back(accumulated);
+                accumulated = s;
+            }
+        }
+    }
+    if (!accumulated.empty()) {
+        ensure_terminal_punct(accumulated);
+        chunks.push_back(accumulated);
+    }
+
+    return chunks;
 }

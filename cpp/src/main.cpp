@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
     std::string text = "Chào mừng bạn đến với hệ thống đọc tiếng nói C++ Native siêu tốc!";
     std::string file_path = "";
     std::string output_path = "outputs/output.wav";
-    std::string model_type = "int8"; // Mặc định dùng bản INT8 tối ưu cao nhất
+    std::string model_type = "fp32"; // Mặc định dùng FP32 AVX-512 FMA tối đa hiệu năng CPU
     std::string pause_config_file = "pause_config.json";
     int num_threads = 4;
     bool clean_only = false;
@@ -78,6 +78,8 @@ int main(int argc, char* argv[]) {
             config.pause_sec = std::stof(argv[++i]);
         } else if (arg == "--pause-config" && i + 1 < argc) {
             pause_config_file = argv[++i];
+        } else if (arg == "--tail-words" && i + 1 < argc) {
+            config.tail_words_prompt = std::stoi(argv[++i]);
         } else if (arg == "--model-type" && i + 1 < argc) {
             model_type = argv[++i];
         } else if ((arg == "--threads" || arg == "-j") && i + 1 < argc) {
@@ -138,27 +140,35 @@ int main(int argc, char* argv[]) {
     std::cout << "🧹 Chuẩn hóa text    : " << (config.enable_normalization ? "Bật (Tự động chuyển số & ngoại ngữ)" : "Tắt") << std::endl;
     std::cout << "---------------------------------------------------------------------------" << std::endl;
 
-    // Chọn tệp mô hình theo model_type
-    std::string enc_file = "models_onnx/matcha_encoder.onnx";
-    std::string dec_file = "models_onnx/matcha_decoder.onnx";
-    std::string vocos_file = "models_onnx/vocos.onnx";
+    // Chọn tệp mô hình theo model_type (int8, fp32, fp16)
+    std::string base_dir = "models_onnx/" + model_type;
+    if (!std::filesystem::exists(base_dir)) {
+        base_dir = "models_onnx/int8";
+    }
+    std::string enc_file = base_dir + "/matcha_encoder.onnx";
+    std::string dec_file = base_dir + "/matcha_decoder.onnx";
+    std::string vocos_file = base_dir + "/vocos.onnx";
     std::string symbols_file = "models_onnx/symbols.json";
+    std::string prompt_enc_file = "models_onnx/prompt_encoder.onnx";
 
-    if (model_type == "fp16") {
-        enc_file = "models_onnx/matcha_encoder_fp16.onnx";
-        dec_file = "models_onnx/matcha_decoder_fp16.onnx";
-    } else if (model_type == "int8") {
-        enc_file = "models_onnx/matcha_encoder_int8.onnx";
-        dec_file = "models_onnx/matcha_decoder_int8.onnx";
-        if (std::filesystem::exists("models_onnx/vocos_matmul_int8.onnx")) {
-            vocos_file = "models_onnx/vocos_matmul_int8.onnx";
-        }
+    if (config.n_timesteps <= 2 && !config.use_gpu) {
+        config.use_sway = true;
+        config.sway_coef = -1.0f;
     }
 
     TTSEngine engine;
     if (!engine.init(enc_file, dec_file, vocos_file, symbols_file, config.use_gpu, "models_onnx/prompt_encoder.onnx", num_threads)) {
         std::cerr << "❌ Khởi tạo TTSEngine thất bại!" << std::endl;
         return 1;
+    }
+
+    // Warmup tự động cho các tệp văn bản dài / chapter để kích hoạt bộ nhớ đệm CPU L3
+    if (!file_path.empty()) {
+        TTSConfig wup_cfg = config;
+        wup_cfg.n_timesteps = 1;
+        std::vector<float> wup_mel;
+        int64_t wup_len = 0;
+        engine.synthesize_sentence("Khởi động hệ thống.", wup_cfg, wup_mel, wup_len);
     }
 
     std::cout << "\n⏳ Đang tiến hành tổng hợp tiếng nói C++..." << std::endl;

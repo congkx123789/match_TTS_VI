@@ -13,7 +13,8 @@ struct TTSConfig {
     float length_scale = 1.0f;
     float pause_sec = 0.15f;
     bool use_gpu = false;
-    int tail_words_prompt = 4;
+    bool use_trt = false;     // TensorRT FP16 — nhanh nhất trên GPU
+    int tail_words_prompt = 10;
     bool use_sway = false;
     float sway_coef = -1.0f;
     float sonic_speed = 1.0f; // Tốc độ tua nhanh bằng Google Sonic WSOLA (1.0 = giữ nguyên, 2.0 = x2, 3.0 = x3, 4.0 = x4)

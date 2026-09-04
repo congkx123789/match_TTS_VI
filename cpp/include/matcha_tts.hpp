@@ -40,22 +40,16 @@ public:
         bool use_gpu = false,
         const std::string& model_type = "fp32"
     ) {
-        std::string enc = models_dir + "/matcha_encoder.onnx";
-        std::string dec = models_dir + "/matcha_decoder.onnx";
-        std::string voc = models_dir + "/vocos.onnx";
+        std::string base_dir = models_dir + "/" + model_type;
+        std::string enc = base_dir + "/matcha_encoder.onnx";
+        std::string dec = base_dir + "/matcha_decoder.onnx";
+        std::string voc = base_dir + "/vocos.onnx";
         std::string sym = models_dir + "/symbols.json";
-
-        if (model_type == "int8") {
-            enc = models_dir + "/matcha_encoder_int8.onnx";
-            dec = models_dir + "/matcha_decoder_int8.onnx";
-        } else if (model_type == "fp16") {
-            enc = models_dir + "/matcha_encoder_fp16.onnx";
-            dec = models_dir + "/matcha_decoder_fp16.onnx";
-        }
+        std::string pe  = models_dir + "/prompt_encoder.onnx";
 
         model_type_ = model_type;
         use_gpu_ = use_gpu;
-        return engine_->init(enc, dec, voc, sym, use_gpu);
+        return engine_->init(enc, dec, voc, sym, use_gpu, pe);
     }
 
     /**
