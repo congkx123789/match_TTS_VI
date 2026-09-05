@@ -1,0 +1,18 @@
+{
+  "para": 0.65,
+  "para_stretch": 1.05,
+  "ellipsis": 0.35,
+  "ellipsis_stretch": 1.12,
+  "period": 0.25,
+  "period_stretch": 1.10,
+  "comma": 0.12,
+  "comma_stretch": 1.05,
+  "question": 0.3,
+  "question_stretch": 1.10,
+  "exclaim": 0.25,
+  "exclaim_stretch": 1.10,
+  "colon": 0.18,
+  "colon_stretch": 1.10,
+  "semicolon": 0.2,
+  "semicolon_stretch": 1.10
+}

@@ -5,7 +5,6 @@
 #include <vector>
 #include <iomanip>
 #include <filesystem>
-#include "json.hpp"
 #include "tts_engine.hpp"
 
 void print_banner() {
@@ -28,10 +27,9 @@ void print_help(const char* prog_name) {
               << "      --pause <giây>      : Khoảng nghỉ cố định giữa các câu (ghi đè cấu hình dấu câu)\n"
               << "      --length-scale <tỷ lệ>: Co giãn âm vị AI thô (mặc định chuẩn: 1.0)\n"
               << "      --temp <nhiệt độ>   : Độ cảm xúc / pitch variation (mặc định: 0.9)\n"
-              << "      --threads, -j <N>   : Số luồng CPU thực thi (1-N, mặc định: 2)\n"
+              << "      --threads, -j <N>   : Số luồng CPU thực thi (1-N, mặc định: 4)\n"
               << "      --cpu / --gpu       : Chọn thiết bị tính toán (CPU hoặc GPU CUDA)\n"
               << "      --model-type <type> : Loại mô hình (int8, fp32, fp16; mặc định: int8)\n"
-              << "      --daemon            : Chạy ở chế độ Resident Memory Daemon Worker siêu tốc\n"
               << "      --no-norm           : Tắt bộ chuẩn hóa số & ngoại ngữ tự động\n"
               << "      --clean-only        : Chỉ in ra văn bản sau khi làm sạch (Clean Input) rồi thoát\n"
               << "  -h, --help              : Hiển thị hướng dẫn này\n"
@@ -44,9 +42,8 @@ int main(int argc, char* argv[]) {
     std::string output_path = "outputs/output.wav";
     std::string model_type = "int8"; // Cố định mặc định INT8 tối ưu AVX2/VNNI siêu tốc và ổn định
     std::string pause_config_file = "pause_config.json";
-    int num_threads = 2; // Mặc định 2 cores
+    int num_threads = 1; // Mặc định 1 core độc lập / request
     bool clean_only = false;
-    bool daemon_mode = false;
     
     TTSConfig config;
     config.n_timesteps = 2; // Chuẩn 2-step Sway Sampling INT8 tối ưu
@@ -88,8 +85,6 @@ int main(int argc, char* argv[]) {
             i++;
         } else if ((arg == "--threads" || arg == "-j") && i + 1 < argc) {
             num_threads = std::max(1, std::min(std::stoi(argv[++i]), 16));
-        } else if (arg == "--daemon") {
-            daemon_mode = true;
         } else if (arg == "--no-norm") {
             config.enable_normalization = false;
         } else if (arg == "--clean-only") {
