@@ -37,4 +37,5 @@ outputs/
 *.tmp
 .DS_Store
 .env
+hf_space/
 

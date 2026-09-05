@@ -1,2 +1,0 @@
-audioop-lts
-gradio==5.19.0
