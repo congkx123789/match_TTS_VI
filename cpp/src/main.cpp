@@ -92,6 +92,10 @@ int main(int argc, char* argv[]) {
             daemon_mode = true;
         } else if (arg == "--no-norm") {
             config.enable_normalization = false;
+        } else if (arg == "--no-prompt" || arg == "--disable-prompt") {
+            config.use_prompt = false;
+        } else if (arg == "--prompt" || arg == "--enable-prompt") {
+            config.use_prompt = true;
         } else if (arg == "--clean-only") {
             clean_only = true;
         } else if (arg == "--gpu") {

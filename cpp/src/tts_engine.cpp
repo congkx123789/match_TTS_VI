@@ -377,8 +377,8 @@ std::vector<float> TTSEngine::synthesize_paragraph(
         std::vector<float> prompt_norm_mel;
         int64_t prompt_mel_frames = 0;
 
-        // Trích xuất Normalized Mel từ đuôi câu trước nạp làm Prompt
-        if (prev_mel_len > 0 && !prev_norm_mel.empty()) {
+        // Trích xuất Normalized Mel từ đuôi câu trước nạp làm Prompt nếu use_prompt được bật
+        if (config.use_prompt && prev_mel_len > 0 && !prev_norm_mel.empty()) {
             int word_count = 1;
             for (char c : prev_sentence) {
                 if (c == ' ') word_count++;

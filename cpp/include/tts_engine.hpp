@@ -14,6 +14,7 @@ struct TTSConfig {
     float pause_sec = 0.15f;
     bool use_gpu = false;
     bool use_trt = false;     // TensorRT FP16 — nhanh nhất trên GPU
+    bool use_prompt = true;   // Kích hoạt Voice Prompt Chaining nối câu
     int tail_words_prompt = 10;
     bool use_sway = false;
     float sway_coef = -1.0f;
@@ -22,6 +23,7 @@ struct TTSConfig {
     bool enable_normalization = true; // Tự động làm sạch & chuẩn hóa số/từ ngoại ngữ
     matcha::PauseConfig pause_config;  // Cấu hình ngắt nghỉ thông minh theo dấu câu
 };
+
 
 class TTSEngine {
 public:
