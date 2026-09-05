@@ -1,10 +1,19 @@
 # 🎙️ Matcha-TTS + Vocos Vietnamese Standalone Pipeline (C++ Native & GPU)
 
+<p align="center">
+  <a href="https://huggingface.co/spaces/Cong123779/matcha-tts"><img src="https://img.shields.io/badge/🤗%20Hugging%20Face%20Space-Live%20Demo-indigo?style=for-the-badge&logo=huggingface" alt="Space Demo"></a>
+  <a href="https://huggingface.co/Cong123779/matcha-tts-vietnamese-onnx-int8"><img src="https://img.shields.io/badge/🤗%20Model%20Hub-ONNX%20INT8-orange?style=for-the-badge&logo=huggingface" alt="Model Hub"></a>
+  <a href="https://github.com/congkx123789/match_TTS_VI"><img src="https://img.shields.io/badge/GitHub-Source%20Code-black?style=for-the-badge&logo=github" alt="GitHub"></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License"></a>
+</p>
+
 Hệ thống tổng hợp tiếng nói tiếng Việt (Vietnamese Text-to-Speech) **C++ Native Siêu Tốc & Standalone**, kết hợp **Matcha-TTS** và **Vocos Vocoder 22,050Hz**.
 
 Hỗ trợ đồng thời:
-- **C++ Native Standalone:** Chạy trực tiếp qua file nhị phân C++ (tự động biên dịch `g++ -O3`), không cần cài đặt Python, tương thích cả **CPU đa luồng AVX-512** và **GPU NVIDIA CUDA Tensor Cores**.
+- **C++ Native Standalone:** Chạy trực tiếp qua file nhị phân C++ (tự động biên dịch `g++ -O3`), không cần cài đặt Python, tương thích cả **CPU đa luồng AVX2/AVX-512** và **GPU NVIDIA CUDA Tensor Cores**.
 - **PyTorch GPU Pipeline:** Chạy qua Python với tốc độ cực đại lên tới **>2,100x Realtime** nhờ kỹ thuật Dynamic Batching trên GPU Blackwell/Ada.
+- **Web Demo & API:** Trải nghiệm trực tuyến trên [Hugging Face Space](https://huggingface.co/spaces/Cong123779/matcha-tts).
+
 
 ---
 
@@ -88,6 +97,8 @@ Chỉ cần clone về và chạy ngay bằng script `./run_cpp.sh`. Script sẽ
 | `--pause-config <path>` | — | `pause_config.json` | Tệp JSON cấu hình thời lượng ngắt nghỉ động theo từng loại dấu câu. |
 | `--pause <float>` | — | *Động* | Cố định khoảng nghỉ giữa các câu theo giây (ghi đè file JSON). |
 | `--tail-words <int>` | — | `10` | Số từ đuôi câu trước được trích xuất làm **Voice Mel Prompt** cho câu sau. |
+| `--prompt` | — | *true* | Bật cơ chế Voice Prompt Chaining nối câu tự nhiên. |
+| `--no-prompt` | — | *false* | Tắt Voice Prompt, đọc từng câu độc lập. |
 | `--no-norm` | — | *false* | Tắt bộ chuẩn hóa số, ngày tháng, ngoại ngữ tự động. |
 | `--clean-only` | — | *false* | Chỉ in văn bản sau khi làm sạch ra màn hình rồi thoát. |
 
