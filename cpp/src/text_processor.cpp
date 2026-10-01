@@ -131,15 +131,45 @@ static std::vector<std::string> split_utf8_chars(const std::string& str) {
     return chars;
 }
 
+// Hàm chuyển đổi toàn diện mọi ký tự Unicode tiếng Việt có dấu sang chữ thường (Full UTF-8 Lowercase)
+static std::string utf8_char_to_lower(const std::string& ch) {
+    if (ch.empty()) return "";
+    if (ch.size() == 1) {
+        return std::string(1, static_cast<char>(std::tolower(static_cast<unsigned char>(ch[0]))));
+    }
+    static const std::unordered_map<std::string, std::string> UPPER_TO_LOWER_VI = {
+        {"A", "a"}, {"Á", "á"}, {"À", "à"}, {"Ả", "ả"}, {"Ã", "ã"}, {"Ạ", "ạ"},
+        {"Ă", "ă"}, {"Ắ", "ắ"}, {"Ằ", "ằ"}, {"Ẳ", "ẳ"}, {"Ẵ", "ẵ"}, {"Ặ", "ặ"},
+        {"Â", "â"}, {"Ấ", "ấ"}, {"Ầ", "ầ"}, {"Ẩ", "ẩ"}, {"Ẫ", "ẫ"}, {"Ậ", "ậ"},
+        {"B", "b"}, {"C", "c"}, {"D", "d"}, {"Đ", "đ"},
+        {"E", "e"}, {"É", "é"}, {"È", "è"}, {"Ẻ", "ẻ"}, {"Ẽ", "ẽ"}, {"Ẹ", "ẹ"},
+        {"Ê", "ê"}, {"Ế", "ế"}, {"Ề", "ề"}, {"Ể", "ể"}, {"Ễ", "ễ"}, {"Ệ", "ệ"},
+        {"G", "g"}, {"H", "h"},
+        {"I", "i"}, {"Í", "í"}, {"Ì", "ì"}, {"Ỉ", "ỉ"}, {"Ĩ", "ĩ"}, {"Ị", "ị"},
+        {"K", "k"}, {"L", "l"}, {"M", "m"}, {"N", "n"},
+        {"O", "o"}, {"Ó", "ó"}, {"Ò", "ò"}, {"Ỏ", "ỏ"}, {"Õ", "õ"}, {"Ọ", "ọ"},
+        {"Ô", "ô"}, {"Ố", "ố"}, {"Ồ", "ồ"}, {"Ổ", "ổ"}, {"Ỗ", "ỗ"}, {"Ộ", "ộ"},
+        {"Ơ", "ơ"}, {"Ớ", "ớ"}, {"Ờ", "ờ"}, {"Ở", "ở"}, {"Ỡ", "ỡ"}, {"Ợ", "ợ"},
+        {"P", "p"}, {"Q", "q"}, {"R", "r"}, {"S", "s"}, {"T", "t"},
+        {"U", "u"}, {"Ú", "ú"}, {"Ù", "ù"}, {"Ủ", "ủ"}, {"Ũ", "ũ"}, {"Ụ", "ụ"},
+        {"Ư", "ư"}, {"Ứ", "ứ"}, {"Ừ", "ừ"}, {"Ử", "ử"}, {"Ữ", "ữ"}, {"Ự", "ự"},
+        {"V", "v"}, {"X", "x"},
+        {"Y", "y"}, {"Ý", "ý"}, {"Ỳ", "ỳ"}, {"Ỷ", "ỷ"}, {"Ỹ", "ỹ"}, {"Ỵ", "ỵ"}
+    };
+    auto it = UPPER_TO_LOWER_VI.find(ch);
+    if (it != UPPER_TO_LOWER_VI.end()) {
+        return it->second;
+    }
+    return ch;
+}
+
 std::vector<int64_t> TextProcessor::text_to_sequence(const std::string& text) const {
     std::vector<int64_t> sequence;
     std::vector<std::string> utf8_chars = split_utf8_chars(text);
 
-    // Chuyển ký tự hoa sang thường (đối với ASCII cơ bản)
+    // Chuyển toàn bộ ký tự Unicode (kể cả có dấu tiếng Việt) sang chữ thường
     for (auto& s : utf8_chars) {
-        if (s.size() == 1) {
-            s[0] = static_cast<char>(std::tolower(static_cast<unsigned char>(s[0])));
-        }
+        s = utf8_char_to_lower(s);
     }
 
     sequence.reserve(utf8_chars.size());
